@@ -3,7 +3,7 @@ const express = require("express");
 // const tourRouter = require('./routes/tourRoutes');
 // const userRouter = require('./routes/userRoutes');
 
-const noteRouter = require("./controllers/noteController");
+const noteRouter = require("./routes/noteRoutes");
 
 const app = express();
 
