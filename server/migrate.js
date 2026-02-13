@@ -5,8 +5,8 @@ const axios = require("axios");
 const glob = require("glob"); // Finds all .md files
 
 // CONFIGURATION
-const API_URL = "http://localhost:3000/api/problems"; // Your local server
-const NOTES_DIR = "C:/Users/YourName/Documents/Obsidian Vault/Leetcode"; // <--- CHANGE THIS
+const API_URL = "http://localhost:3000/api/v1/notes/"; // Your local server
+const NOTES_DIR = "C:\\Obsidian\\Coding and Programmes\\DSA\\Leetcode Problems"; // <--- CHANGE THIS
 
 async function migrate() {
   // 1. Find all markdown files
