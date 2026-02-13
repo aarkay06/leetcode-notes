@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
 
-const Note = mongoose.model("Note", noteSchema);
-
 const noteSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -63,3 +61,5 @@ const noteSchema = new mongoose.Schema({
     default: [],
   },
 });
+
+const Note = mongoose.model("Note", noteSchema);

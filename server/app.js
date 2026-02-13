@@ -3,6 +3,8 @@ const express = require("express");
 // const tourRouter = require('./routes/tourRoutes');
 // const userRouter = require('./routes/userRoutes');
 
+const noteRouter = require("./controllers/noteController");
+
 const app = express();
 
 // 1) MIDDLEWARES
@@ -24,7 +26,7 @@ app.use((req, res, next) => {
 });
 
 // 3) ROUTES
-app.use("/api/v1/tours", tourRouter);
-app.use("/api/v1/users", userRouter);
+app.use("/api/v1/tours", noteRouter);
+// app.use("/api/v1/users", userRouter);
 
 module.exports = app;
