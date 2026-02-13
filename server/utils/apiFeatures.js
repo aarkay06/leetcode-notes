@@ -8,7 +8,7 @@ class APIFeatures {
   //Filter - Remove the non-data based filters like sort, limit, page and fields.
   filter() {
     //create new object with only the data based filters.
-    queryObj = { ...this.queryString };
+    const queryObj = { ...this.queryString };
     const excludedFieds = ["page", "limit", "sort", "fields"];
     excludedFieds.forEach((element) => delete queryObj[element]);
 
