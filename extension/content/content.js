@@ -1,8 +1,6 @@
-// content.js - Fully Fixed for CSP & Submission Structure
-
 // 1. Create the Navbar Button
 function createNavbarButton() {
-  if (document.getElementById("obsidian-save-btn")) return;
+  if (document.getElementById("add-note-to-server")) return;
 
   const targetContainer = document.querySelector(
     ".relative.flex.items-center.justify-end.gap-2",
@@ -14,11 +12,11 @@ function createNavbarButton() {
   }
 
   const btnDiv = document.createElement("div");
-  btnDiv.id = "obsidian-save-btn";
+  btnDiv.id = "add-note-to-server";
   btnDiv.className =
     "flex cursor-pointer rounded-lg p-2 text-sd-muted-foreground hover:text-sd-foreground hover:bg-fill-tertiary dark:hover:bg-fill-tertiary items-center justify-center";
   btnDiv.setAttribute("role", "button");
-  btnDiv.title = "Save to Obsidian";
+  btnDiv.title = "Save Note to Server";
 
   // Icon: Scaled to 18px
   btnDiv.innerHTML = `
@@ -210,7 +208,7 @@ function scrapeAndSend(isManual, solutionCode) {
 
   console.log("Sending Payload:", problemData);
 
-  fetch("http://localhost:3000/api/problems", {
+  fetch("https://leetcode-notes.onrender.com/api/v1/notes/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(problemData),
