@@ -1,0 +1,104 @@
+/* Rating Popup */
+#leetcode-journey-rating-popup {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 1.5rem;
+  z-index: 10000;
+  max-width: 350px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.lj-popup-content h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  color: #2c3e50;
+}
+
+.lj-popup-content p {
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+#lj-rating-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin: 1rem 0;
+  box-sizing: border-box;
+}
+
+#lj-rating-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.lj-popup-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.lj-popup-buttons button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+#lj-submit-rating {
+  background: #27ae60;
+  color: white;
+}
+
+#lj-skip-rating {
+  background: #95a5a6;
+  color: white;
+}
+
+.lj-popup-buttons button:hover {
+  opacity: 0.9;
+}
+
+/* Create Note Button */
+.lj-create-note-button {
+  padding: 0.5rem 1rem;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  transition: opacity 0.2s;
+}
+
+.lj-create-note-button:hover {
+  opacity: 0.9;
+}
+
+.lj-create-note-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
