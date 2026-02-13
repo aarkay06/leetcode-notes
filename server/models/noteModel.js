@@ -50,7 +50,7 @@ const noteSchema = new mongoose.Schema({
   },
   code: {
     type: String,
-    required: [true, "solution code is missing"],
+    default: "",
   },
   solution: {
     type: String,
@@ -59,6 +59,10 @@ const noteSchema = new mongoose.Schema({
   related_problems_slugs: {
     type: [String],
     default: [],
+  },
+  language: {
+    type: String,
+    default: "cpp",
   },
 });
 

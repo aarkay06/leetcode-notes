@@ -58,8 +58,8 @@ async function migrate() {
 
       // 6. Prepare Payload matching your Schema
       const payload = {
-        title: frontmatter.title,
-        leetcodeId: frontmatter.leetcode_id.toString(), // Ensure string
+        name: frontmatter.title,
+        id: frontmatter.leetcode_id.toString(), // Ensure string
         difficulty: frontmatter.difficulty,
         tags: Array.isArray(frontmatter.tags)
           ? frontmatter.tags
@@ -69,10 +69,6 @@ async function migrate() {
         description: description,
         url: frontmatter.url || "",
         slugs: [], // Old notes won't have related slugs, send empty
-        stats: {
-          runtime: "", // Old notes might not have this
-          memory: "",
-        },
       };
 
       // 7. Send to API
