@@ -24,7 +24,9 @@ exports.getAllNotes = catchAsync(async (req, res) => {
 });
 
 exports.createNote = catchAsync(async (req, res) => {
+  console.log(req.body);
   const newNote = await Note.create(req.body);
+
   res.status(200).json({
     status: "success",
     data: { newNote },
