@@ -1,0 +1,17 @@
+{
+  "name": "leetcode-server",
+  "version": "1.0.0",
+  "description": "A node server to connect to Mongo Database ",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Raj",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongoose": "^8.23.0",
+    "morgan": "^1.10.1"
+  }
+}
