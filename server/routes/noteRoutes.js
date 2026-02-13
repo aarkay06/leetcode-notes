@@ -6,7 +6,8 @@ const router = express.Router();
 router
   .route("/")
   .get(noteController.getAllNotes)
-  .post(noteController.createNote);
+  .post(noteController.createNote)
+  .delete(noteController.deleteNote);
 // router
 //   .route("/:id")
 //   .get(noteController.getNote)

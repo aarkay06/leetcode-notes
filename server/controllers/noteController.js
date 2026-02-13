@@ -34,3 +34,7 @@ exports.createNote = catchAsync(async (req, res) => {
 });
 
 exports.updateNote = catchAsync(async (req, res) => {});
+
+exports.deleteNote = catchAsync(async (req, res) => {
+  await Note.deleteMany();
+});
