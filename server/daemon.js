@@ -88,7 +88,7 @@ ${data.solution}
 // 2. WATCHER: Sync Edits from Obsidian -> Cloud
 // ==========================================
 
-console.log(`[Watcher] Watching for changes in: ${OBSIDIAN_VAULT}`);
+// console.log(`[Watcher] Watching for changes in: ${OBSIDIAN_VAULT}`);
 
 const watcher = chokidar.watch(OBSIDIAN_VAULT, {
   ignored: /(^|[\/\\])\../, // ignore dotfiles
