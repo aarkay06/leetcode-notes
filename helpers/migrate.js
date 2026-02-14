@@ -5,7 +5,7 @@ const axios = require("axios");
 const glob = require("glob");
 
 // --- CONFIGURATION ---
-const API_URL = "http://localhost:3000/api/v1/notes";
+const API_URL = "http://localhost:8000/api/v1/notes";
 // CHANGE THIS TO YOUR ACTUAL OBSIDIAN PATH
 const NOTES_DIR = "C:\\Obsidian\\Coding and Programmes\\DSA\\Leetcode Problems";
 

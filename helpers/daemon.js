@@ -12,7 +12,7 @@ dotenv.config({ path: "./config.env" });
 
 const PORT = 3000;
 const OBSIDIAN_VAULT = process.env.OBISIDIAN_VAULT;
-const CLOUD_API_URL = process.env.CLOUD_API_URL;
+const CLOUD_API_URL = "http://localhost:8000/api/v1/notes";
 
 const app = express();
 app.use(cors());
