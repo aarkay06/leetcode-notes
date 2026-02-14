@@ -52,4 +52,7 @@ exports.updateNotes = catchAsync(async (req, res, next) => {
 
 exports.deleteNote = catchAsync(async (req, res) => {
   await Note.deleteMany();
+  res.status(200).json({
+    status: "success",
+  });
 });
