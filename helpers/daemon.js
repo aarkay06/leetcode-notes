@@ -75,11 +75,11 @@ app.post("/api/problems", async (req, res) => {
 const problem_folder_watcher = chokidar.watch(LEETCODE_DIR, {
   ignored: /(^|[\/\\])\../,
   persistent: true,
-  ignoreInitial: true,
+  ignoreInitial: false,
   awaitWriteFinish: { stabilityThreshold: 2000, pollInterval: 100 },
 });
 
-problem_folder_watcher.on("change", async (filePath) => {
+const handleProblemSync = async (filePath) => {
   if (path.extname(filePath) !== ".md") return;
 
   const content = fs.readFileSync(filePath, "utf8");
@@ -91,15 +91,17 @@ problem_folder_watcher.on("change", async (filePath) => {
   const payload = parseMarkdownToPayload(parsed.data, parsed.content);
 
   await pushToCloud(payload);
-});
+};
 
+problem_folder_watcher.on("change", handleProblemSync);
+problem_folder_watcher.on("add", handleProblemSync);
 // ==========================================
 // 3. WATCHER B: Algorithms (Tags)
 // ==========================================
 const tags_folder_watcher = chokidar.watch(ALGORITHMS_DIR, {
   ignored: /(^|[\/\\])\../,
   persistent: true,
-  ignoreInitial: true,
+  ignoreInitial: false,
   awaitWriteFinish: { stabilityThreshold: 2000, pollInterval: 100 },
 });
 
