@@ -126,29 +126,6 @@ async function initiateScrape(isManual) {
   scrapeAndSend(isManual, finalCode);
 }
 
-function getRelatedProblems() {
-  // 1. Find all the problem links in that specific list
-  // The selector looks for links inside the list container you showed me
-  const relatedLinks = document.querySelectorAll(
-    "div.flex.w-full.items-center.justify-between a",
-  );
-
-  const slugs = [];
-
-  relatedLinks.forEach((link) => {
-    const href = link.getAttribute("href");
-    if (href) {
-      // href looks like: "/problems/find-all-numbers-disappeared-in-an-array/"
-      // We want just: "find-all-numbers-disappeared-in-an-array"
-      const parts = href.split("/").filter((p) => p.length > 0);
-      const slug = parts[parts.length - 1]; // The last part is the slug
-      slugs.push(slug);
-    }
-  });
-
-  return slugs;
-}
-
 // 7. Main Scraper & Sender
 function scrapeAndSend(isManual, solutionCode) {
   // Title & ID
@@ -162,7 +139,6 @@ function scrapeAndSend(isManual, solutionCode) {
   const idMatch = title.match(/^(\d+)\./);
   const leetcodeId = idMatch ? idMatch[1] : "0";
   title = title.replace(/^\d+\.\s*/, "");
-  const slugs = getRelatedProblems();
 
   // Difficulty
   const diffEl =
@@ -203,10 +179,7 @@ function scrapeAndSend(isManual, solutionCode) {
     description,
     url: window.location.href,
     stats,
-    slugs,
   };
-
-  console.log("Sending Payload:", problemData);
 
   fetch("https://leetcode-notes.onrender.com/api/v1/notes/", {
     method: "POST",

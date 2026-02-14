@@ -59,7 +59,9 @@ ${matter.stringify("", frontmatter).trim()}
 # ${data.title}
 
 #### Problem Description
+\`\`\`js
 ${data.description}
+\`\`\`
 
 #### Solution
 ${data.solutionExplanation || "Add your explanation here..."}
