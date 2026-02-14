@@ -63,7 +63,7 @@ async function migrate() {
       // 4. Construct Payload
       const payload = {
         title: frontmatter.title, // Maps to 'name' in your schema
-        id: Number(frontmatter.leetcode_id), // Maps to 'id' (Number)
+        leetcode_id: Number(frontmatter.leetcode_id), // Maps to 'id' (Number)
         difficulty: frontmatter.difficulty,
         tags: Array.isArray(frontmatter.tags)
           ? frontmatter.tags
@@ -79,7 +79,6 @@ async function migrate() {
         // Default values for other schema fields
         rating: frontmatter.rating || 0,
         date_solved: frontmatter.date_solved || new Date(),
-        related_problems_slugs: [], // You can add logic to parse [[links]] later if needed
       };
 
       // 5. Send to Server
