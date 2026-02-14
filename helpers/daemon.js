@@ -10,38 +10,64 @@ const dotenv = require("dotenv");
 
 dotenv.config({ path: "./config.env" });
 
-const PORT = 3000;
-const OBSIDIAN_VAULT = process.env.OBISIDIAN_VAULT;
+const PORT = 3001; // Changed to 3001 to avoid conflict if React is on 3000
+const OBSIDIAN_VAULT = process.env.OBSIDIAN_VAULT;
 const LEETCODE_DIR = path.join(OBSIDIAN_VAULT, "Leetcode Problems");
 const ALGORITHMS_DIR = path.join(OBSIDIAN_VAULT, "Algorithms");
-const CLOUD_API_URL = "http://localhost:8000/api/v1/notes";
+const CLOUD_API_URL =
+  process.env.CLOUD_API_URL || "http://localhost:8000/api/v1/notes";
+
+// Ensure directories exist
+if (!fs.existsSync(LEETCODE_DIR))
+  fs.mkdirSync(LEETCODE_DIR, { recursive: true });
+if (!fs.existsSync(ALGORITHMS_DIR))
+  fs.mkdirSync(ALGORITHMS_DIR, { recursive: true });
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: "10mb" }));
 
+// ==========================================
+// 1. RECEIVER: Handle Data from Chrome Extension
+// ==========================================
 app.post("/api/problems", async (req, res) => {
   const data = req.body;
   const today = new Date();
-  const dateSolved = today.toISOString().split("T")[0];
-  const nextReviewDate = new Date();
-  nextReviewDate.setDate(today.getDate() + 4);
-  const nextReview = nextReviewDate.toISOString().split("T")[0];
 
-  data.leetcode_id = data.leetcodeId ? data.leetcodeId : data.leetcode_id;
+  // Basic Data Prep
+  data.leetcode_id = data.leetcodeId
+    ? Number(data.leetcodeId)
+    : Number(data.leetcode_id);
   data.rating = 0;
-  data.date_solved = dateSolved;
+  data.date_solved = today.toISOString().split("T")[0];
   data.review_count = 0;
   data.reviewed_on = [];
-  data.next_review = nextReview;
+
+  // Next review = 4 days from now
+  const nextReviewDate = new Date();
+  nextReviewDate.setDate(today.getDate() + 4);
+  data.next_review = nextReviewDate.toISOString().split("T")[0];
 
   try {
-    console.log(data);
+    console.log(`[Extension] Received: ${data.title}`);
+
+    // A. Save to Obsidian
     const filePath = saveToLocalFile(data);
+
+    // B. Ensure Tag Files Exist
     ensureTagFilesExist(data.tags);
 
-    // We don't await this because we want to reply to Chrome fast
-    pushToCloud(data).catch((err) => alert("Cloud push failed:", err.message));
+    // C. Push to Cloud (Construct proper payload first)
+    const cloudPayload = {
+      ...data,
+      doc_type: "problem", // Important!
+      leetcode_id: data.leetcode_id,
+    };
+
+    // Fire and forget upload
+    pushToCloud(cloudPayload).catch((err) =>
+      console.error("Cloud push failed:", err.message),
+    );
 
     res.json({ success: true, filename: path.basename(filePath) });
   } catch (err) {
@@ -50,18 +76,90 @@ app.post("/api/problems", async (req, res) => {
   }
 });
 
-// Helper: Ensure Tag files exist in Algorithms folder
+// ==========================================
+// 2. WATCHER A: LeetCode Problems
+// ==========================================
+const problem_folder_watcher = chokidar.watch(LEETCODE_DIR, {
+  ignored: /(^|[\/\\])\../,
+  persistent: true,
+  ignoreInitial: true,
+  awaitWriteFinish: { stabilityThreshold: 2000, pollInterval: 100 },
+});
+
+problem_folder_watcher.on("change", async (filePath) => {
+  if (path.extname(filePath) !== ".md") return;
+  console.log(`[Problem Watcher] Changed: ${path.basename(filePath)}`);
+
+  const content = fs.readFileSync(filePath, "utf8");
+  const parsed = matter(content);
+
+  // Skip if not a valid problem file
+  if (!parsed.data.leetcode_id) return;
+
+  const payload = parseMarkdownToPayload(parsed.data, parsed.content);
+
+  await pushToCloud(payload);
+});
+
+// ==========================================
+// 3. WATCHER B: Algorithms (Tags)
+// ==========================================
+const tags_folder_watcher = chokidar.watch(ALGORITHMS_DIR, {
+  ignored: /(^|[\/\\])\../,
+  persistent: true,
+  ignoreInitial: true,
+  awaitWriteFinish: { stabilityThreshold: 2000, pollInterval: 100 },
+});
+
+const handleTagSync = async (filePath) => {
+  if (path.extname(filePath) !== ".md") return;
+
+  const fileName = path.basename(filePath, ".md");
+  console.log(`[Tag Watcher] Syncing: ${fileName}`);
+
+  const content = fs.readFileSync(filePath, "utf8");
+
+  const payload = {
+    doc_type: "tag",
+    title: fileName,
+    description: content,
+    tags: [],
+    leetcode_id: undefined,
+  };
+
+  await pushToCloud(payload);
+};
+
+// Sync on BOTH 'add' (auto-creation) and 'change' (manual edits)
+tags_folder_watcher.on("add", handleTagSync);
+tags_folder_watcher.on("change", handleTagSync);
+
+// ==========================================
+// 4. HELPERS
+// ==========================================
+
+async function pushToCloud(payload) {
+  try {
+    // POST works for both Create and Update (Upsert)
+    await axios.post(CLOUD_API_URL, payload);
+    console.log(`[Cloud] ✅ Sync successful: ${payload.title}`);
+  } catch (error) {
+    console.error(`[Cloud] ❌ Sync failed:`, error.message);
+  }
+}
+
 function ensureTagFilesExist(tags) {
   if (!tags || !Array.isArray(tags)) return;
 
   tags.forEach((tag) => {
-    // Sanitize tag (e.g. "Bit Manipulation" -> "Bit-Manipulation")
     const safeTagName = tag.trim().replace(/\s+/g, "-");
     const tagFilePath = path.join(ALGORITHMS_DIR, `${safeTagName}.md`);
 
     if (!fs.existsSync(tagFilePath)) {
+      console.log(`[Tags] Creating new topic: ${safeTagName}`);
       const content = `# ${safeTagName}\n\nType your summary and patterns for ${tag} here.\n`;
       fs.writeFileSync(tagFilePath, content);
+      // 'tags_folder_watcher' will catch this 'add' event and sync it!
     }
   });
 }
@@ -70,7 +168,7 @@ function saveToLocalFile(data) {
   const frontmatter = {
     doc_type: "problem",
     title: data.title,
-    leetcode_id: Number(data.leetcodeId),
+    leetcode_id: Number(data.leetcode_id),
     difficulty: data.difficulty,
     rating: data.rating,
     date_solved: data.date_solved,
@@ -81,7 +179,6 @@ function saveToLocalFile(data) {
     tags: data.tags,
   };
 
-  // 2. Prepare Content
   const fileContent = `${matter.stringify("", frontmatter).trim()}
 
 # ${data.title}
@@ -102,83 +199,11 @@ ${data.solution}
 #### Related Problems
 `;
 
-  // 3. Write File
-  const fileName = `${data.leetcodeId}. ${data.title}.md`;
+  const fileName = `${data.leetcode_id}. ${data.title}.md`; // Fixed property access
   const filePath = path.join(LEETCODE_DIR, fileName);
   fs.writeFileSync(filePath, fileContent);
+  console.log(`[Local] Saved to: ${fileName}`);
   return filePath;
-}
-
-const problem_folder_watcher = chokidar.watch(LEETCODE_DIR, {
-  ignored: /(^|[\/\\])\../, // ignore dotfiles
-  persistent: true,
-  ignoreInitial: true, // Don't sync everything on startup, only new changes
-  awaitWriteFinish: {
-    stabilityThreshold: 30000, // Wait 2s after you stop typing to sync
-    pollInterval: 100,
-  },
-});
-
-const tags_folder_watcher = chokidar.watch(ALGORITHMS_DIR, {
-  ignored: /(^|[\/\\])\../,
-  persistent: true,
-  ignoreInitial: true,
-  awaitWriteFinish: {
-    stabilityThreshold: 30000, // Wait 2s after you stop typing to sync
-    pollInterval: 100,
-  },
-});
-
-tags_folder_watcher.on("change", async (filePath) => {
-  if (path.extname(filePath) !== ".md") return;
-
-  const fileName = path.basename(filePath, ".md"); // "Binary-Search"
-  const content = fs.readFileSync(filePath, "utf8");
-
-  const payload = {
-    doc_type: "tag",
-    title: fileName,
-    description: content,
-    tags: [],
-    leetcode_id: undefined, // Explicitly undefined so server validation passes
-  };
-
-  await pushToCloud(payload);
-});
-
-problem_folder_watcher.on("change", async (filePath) => {
-  if (path.extname(filePath) !== ".md") return;
-
-  console.log(`[Watcher] File changed: ${path.basename(filePath)}`);
-
-  // Read the updated file
-  const content = fs.readFileSync(filePath, "utf8");
-  const parsed = matter(content);
-
-  // We need the ID to update the correct record in Cloud DB
-  if (!parsed.data.leetcode_id) return;
-
-  const payload = parseMarkdownToPayload(parsed.data, parsed.content);
-
-  await updateToCloud(payload);
-});
-
-async function pushToCloud(payload) {
-  try {
-    await axios.post(CLOUD_API_URL, payload);
-    console.log(`Cloud Sync successful!`);
-  } catch (error) {
-    console.error(`Cloud Sync failed:`, error.message);
-  }
-}
-
-async function updateToCloud(payload) {
-  try {
-    const response = await axios.patch(CLOUD_API_URL, payload);
-    console.log(`Cloud update successful!, ${response}`);
-  } catch (error) {
-    console.error(`Cloud update failed:`, error.message);
-  }
 }
 
 function parseMarkdownToPayload(frontmatter, content) {
@@ -192,37 +217,29 @@ function parseMarkdownToPayload(frontmatter, content) {
   };
 
   let rawDescription = extractSection("Problem Description");
-  // Regex to remove the wrapping code block backticks if present
   const cleanDescription = rawDescription
     .replace(/^```[\w+\s]*\n([\s\S]*?)```$/i, "$1")
     .trim();
 
   const solutionText = extractSection("Solution");
 
-  // The code section contains a code block (```cpp ... ```). We need just the inner code.
   const codeSectionText = extractSection("Code");
   const codeBlockRegex = /```[\w+\s]*\n([\s\S]*?)```/;
   const codeMatch = codeSectionText.match(codeBlockRegex);
   const cleanCode = codeMatch ? codeMatch[1].trim() : "";
 
   return {
-    // Map Frontmatter properties
+    doc_type: "problem", // Explicitly identify this as a problem
     title: frontmatter.title,
-    leetcode_id: Number(frontmatter.leetcode_id), // Ensure it's a Number
+    leetcode_id: Number(frontmatter.leetcode_id),
     difficulty: frontmatter.difficulty,
     rating: frontmatter.rating || 0,
-
-    // Dates
     date_solved: frontmatter.date_solved,
     next_review: frontmatter.next_review,
     reviewed_on: frontmatter.reviewed_on || [],
     review_count: frontmatter.review_count || 0,
-
-    // Metadata
     url: frontmatter.url,
     tags: frontmatter.tags || [],
-
-    // The Extracted Content
     description: cleanDescription,
     solution: solutionText,
     code: cleanCode,
@@ -233,4 +250,5 @@ function parseMarkdownToPayload(frontmatter, content) {
 // Start Server
 app.listen(PORT, () => {
   console.log(`Daemon running on http://localhost:${PORT}`);
+  console.log(`Watching: ${LEETCODE_DIR}`);
 });
