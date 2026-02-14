@@ -119,7 +119,7 @@ watcher.on("change", async (filePath) => {
 
   const payload = parseMarkdownToPayload(parsed.data, parsed.content);
 
-  await pushToCloud(payload);
+  await updateToCloud(payload);
 });
 
 // ==========================================
@@ -127,11 +127,19 @@ watcher.on("change", async (filePath) => {
 // ==========================================
 async function pushToCloud(payload) {
   try {
-    console.log("handle cloud.");
     await axios.post(CLOUD_API_URL, payload);
     console.log(`Cloud Sync successful!`);
   } catch (error) {
     console.error(`Cloud Sync failed:`, error.message);
+  }
+}
+
+async function updateToCloud(payload) {
+  try {
+    await axios.patch(CLOUD_API_URL, payload);
+    console.log(`Cloud update successful!`);
+  } catch (error) {
+    console.error(`Cloud update failed:`, error.message);
   }
 }
 
