@@ -40,6 +40,9 @@ const noteSchema = new mongoose.Schema({
     type: [Date],
     default: [],
   },
+  next_review: {
+    type: Date,
+  },
   url: {
     type: String,
     required: [true, "the problem must have a url associated with it."],
@@ -55,10 +58,6 @@ const noteSchema = new mongoose.Schema({
   solution: {
     type: String,
     default: "",
-  },
-  related_problems_slugs: {
-    type: [String],
-    default: [],
   },
   language: {
     type: String,
