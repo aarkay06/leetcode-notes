@@ -20,20 +20,24 @@ exports.getAllNotes = catchAsync(async (req, res) => {
 
 exports.createNote = catchAsync(async (req, res) => {
   console.log(req.body);
-  if (req.body.doc_type === "tag") {
-    filter = { title: req.body.title, doc_type: "tag" };
-  } else {
-    filter = { leetcode_id: req.body.leetcode_id };
+  try {
+    if (req.body.doc_type === "tag") {
+      filter = { title: req.body.title, doc_type: "tag" };
+    } else {
+      filter = { leetcode_id: req.body.leetcode_id };
+    }
+    const note = await Note.findOneAndUpdate(filter, req.body, {
+      new: true,
+      runValidators: true,
+      upsert: true,
+    });
+    res.status(200).json({
+      status: "success",
+      data: { note },
+    });
+  } catch (error) {
+    throw new AppError(error);
   }
-  const note = await Note.findOneAndUpdate(filter, req.body, {
-    new: true,
-    runValidators: true,
-    upsert: true,
-  });
-  res.status(200).json({
-    status: "success",
-    data: { note },
-  });
 });
 
 exports.deleteNote = catchAsync(async (req, res) => {
