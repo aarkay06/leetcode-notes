@@ -72,81 +72,83 @@ ${data.solution}
 #### Related Problems
 
 `;
+
+  // 3. Write File
+  // Sanitize filename
+  // const safeTitle = data.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+  const fileName = `${data.leetcodeId}. ${data.title}.md`;
+  const filePath = path.join(OBSIDIAN_VAULT, fileName);
+
+  fs.writeFileSync(filePath, fileContent);
+  console.log(`[Local] Saved to: ${fileName}`);
+  return filePath;
 }
-//   // 3. Write File
-//   // Sanitize filename
-//   const safeTitle = data.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-//   const fileName = `${data.leetcodeId}. ${data.title}.md`;
-//   const filePath = path.join(OBSIDIAN_VAULT, fileName);
 
-//   fs.writeFileSync(filePath, fileContent);
-//   console.log(`[Local] Saved to: ${fileName}`);
-//   return filePath;
-// }
+// ==========================================
+// 2. WATCHER: Sync Edits from Obsidian -> Cloud
+// ==========================================
 
-// // ==========================================
-// // 2. WATCHER: Sync Edits from Obsidian -> Cloud
-// // ==========================================
-// console.log(`[Watcher] Watching for changes in: ${OBSIDIAN_VAULT}`);
+console.log(`[Watcher] Watching for changes in: ${OBSIDIAN_VAULT}`);
 
-// const watcher = chokidar.watch(OBSIDIAN_VAULT, {
-//   ignored: /(^|[\/\\])\../, // ignore dotfiles
-//   persistent: true,
-//   ignoreInitial: true, // Don't sync everything on startup, only new changes
-//   awaitWriteFinish: {
-//     stabilityThreshold: 2000, // Wait 2s after you stop typing to sync
-//     pollInterval: 100,
-//   },
-// });
+const watcher = chokidar.watch(OBSIDIAN_VAULT, {
+  ignored: /(^|[\/\\])\../, // ignore dotfiles
+  persistent: true,
+  ignoreInitial: true, // Don't sync everything on startup, only new changes
+  awaitWriteFinish: {
+    stabilityThreshold: 2000, // Wait 2s after you stop typing to sync
+    pollInterval: 100,
+  },
+});
 
-// watcher.on("change", async (filePath) => {
-//   if (path.extname(filePath) !== ".md") return;
+watcher.on("change", async (filePath) => {
+  if (path.extname(filePath) !== ".md") return;
 
-//   console.log(`[Watcher] File changed: ${path.basename(filePath)}`);
+  console.log(`[Watcher] File changed: ${path.basename(filePath)}`);
 
-//   // Read the updated file
-//   const content = fs.readFileSync(filePath, "utf8");
-//   const parsed = matter(content);
+  // Read the updated file
+  const content = fs.readFileSync(filePath, "utf8");
+  const parsed = matter(content);
 
-//   // We need the ID to update the correct record in Cloud DB
-//   if (!parsed.data.leetcode_id) return;
+  // We need the ID to update the correct record in Cloud DB
+  if (!parsed.data.leetcode_id) return;
 
-//   // Parse out the sections (Description, Solution, Code)
-//   // (Reuse the extraction logic from your migration script here)
-//   const payload = parseMarkdownToPayload(parsed.data, parsed.content);
+  // Parse out the sections (Description, Solution, Code)
+  // (Reuse the extraction logic from your migration script here)
+  const payload = parseMarkdownToPayload(parsed.data, parsed.content);
 
-//   // Push update to Cloud
-//   await pushToCloud(payload);
-// });
+  // Push update to Cloud
+  await pushToCloud(payload);
+});
 
-// // ==========================================
-// // 3. CLOUD SYNC: The Uploader
-// // ==========================================
-// async function pushToCloud(payload) {
-//   try {
-//     console.log(`[Cloud] Syncing ${payload.title || payload.name}...`);
-//     // Assuming your API handles both Create (POST) and Update (PUT) logic intelligently
-//     // or uses upsert based on leetcode_id
-//     await axios.post(CLOUD_API_URL, payload);
-//     console.log(`[Cloud] ✅ Sync successful!`);
-//   } catch (error) {
-//     console.error(`[Cloud] ❌ Sync failed:`, error.message);
-//   }
-// }
+// ==========================================
+// 3. CLOUD SYNC: The Uploader
+// ==========================================
+async function pushToCloud(payload) {
+  try {
+    console.log("handle cloud.");
+    // console.log(`[Cloud] Syncing ${payload.title || payload.name}...`);
+    // // Assuming your API handles both Create (POST) and Update (PUT) logic intelligently
+    // // or uses upsert based on leetcode_id
+    // await axios.post(CLOUD_API_URL, payload);
+    console.log(`[Cloud] ✅ Sync successful!`);
+  } catch (error) {
+    console.error(`[Cloud] ❌ Sync failed:`, error.message);
+  }
+}
 
-// // Helper to parse the full markdown back into JSON for the API
-// function parseMarkdownToPayload(frontmatter, content) {
-//   // ... Copy the regex logic from your migrate.js script here ...
-//   // This ensures that when you edit the text in Obsidian, the specific
-//   // fields (Description vs Solution) are updated correctly in the DB.
+// Helper to parse the full markdown back into JSON for the API
+function parseMarkdownToPayload(frontmatter, content) {
+  // ... Copy the regex logic from your migrate.js script here ...
+  // This ensures that when you edit the text in Obsidian, the specific
+  // fields (Description vs Solution) are updated correctly in the DB.
 
-//   // Simple placeholder return for now:
-//   return {
-//     id: frontmatter.leetcode_id,
-//     name: frontmatter.title,
-//     // ... mapped fields
-//   };
-// }
+  // Simple placeholder return for now:
+  return {
+    id: frontmatter.leetcode_id,
+    name: frontmatter.title,
+    // ... mapped fields
+  };
+}
 
 // Start Server
 app.listen(PORT, () => {
