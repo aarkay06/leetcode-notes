@@ -75,7 +75,7 @@ app.post("/api/problems", async (req, res) => {
 const problem_folder_watcher = chokidar.watch(LEETCODE_DIR, {
   ignored: /(^|[\/\\])\../,
   persistent: true,
-  ignoreInitial: false,
+  ignoreInitial: true,
   awaitWriteFinish: { stabilityThreshold: 2000, pollInterval: 100 },
 });
 
@@ -101,7 +101,7 @@ problem_folder_watcher.on("add", handleProblemSync);
 const tags_folder_watcher = chokidar.watch(ALGORITHMS_DIR, {
   ignored: /(^|[\/\\])\../,
   persistent: true,
-  ignoreInitial: false,
+  ignoreInitial: true,
   awaitWriteFinish: { stabilityThreshold: 2000, pollInterval: 100 },
 });
 
@@ -109,7 +109,6 @@ const handleTagSync = async (filePath) => {
   if (path.extname(filePath) !== ".md") return;
 
   const fileName = path.basename(filePath, ".md");
-
   const content = fs.readFileSync(filePath, "utf8");
 
   const payload = {
