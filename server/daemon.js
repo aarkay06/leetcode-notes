@@ -12,6 +12,7 @@ dotenv.config({ path: "./config.env" });
 
 const PORT = 3000;
 const OBSIDIAN_VAULT = process.env.OBISIDIAN_VAULT;
+console.log(OBSIDIAN_VAULT);
 const CLOUD_API_URL = process.env.CLOUD_API_URL;
 
 const app = express();
@@ -24,12 +25,12 @@ app.post("/api/problems", async (req, res) => {
   try {
     const filePath = saveToLocalFile(data);
 
-    // We don't await this because we want to reply to Chrome fast
-    pushToCloud(data).catch((err) =>
-      console.error("Cloud push failed:", err.message),
-    );
+    // // We don't await this because we want to reply to Chrome fast
+    // pushToCloud(data).catch((err) =>
+    //   console.error("Cloud push failed:", err.message),
+    // );
 
-    res.json({ success: true, filename: path.basename(filePath) });
+    // res.json({ success: true, filename: path.basename(filePath) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
@@ -76,6 +77,7 @@ ${data.solution}
   // Sanitize filename
   // const safeTitle = data.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
   const fileName = `${data.leetcodeId}. ${data.title}.md`;
+  console.log(fileName);
   const filePath = path.join(OBSIDIAN_VAULT, fileName);
   console.log(filePath);
   fs.writeFileSync(filePath, fileContent);
