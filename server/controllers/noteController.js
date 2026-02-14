@@ -1,6 +1,7 @@
 const Note = require("./../models/noteModel");
 const catchAsync = require("../utils/catchAsync");
 const APIFeatures = require("../utils/apiFeatures");
+const AppError = require("../utils/appError");
 
 // exports.aliasingMiddleware = (req, res, next) => {
 //   req.query.sort = '-ratingsAverage,price';
@@ -35,7 +36,8 @@ exports.createNote = catchAsync(async (req, res) => {
 
 exports.updateNotes = catchAsync(async (req, res, next) => {
   console.log("called for an update!");
-  const note = await Note.findByIdAndUpdate(req.params.leetcode_id, req.body, {
+  console.log(req.body);
+  const note = await Note.findByIdAndUpdate(req.body.leetcode_id, req.body, {
     new: true,
     runValidators: true,
   });

@@ -136,8 +136,8 @@ async function pushToCloud(payload) {
 
 async function updateToCloud(payload) {
   try {
-    await axios.patch(CLOUD_API_URL, payload);
-    console.log(`Cloud update successful!`);
+    const response = await axios.patch(CLOUD_API_URL, payload);
+    console.log(`Cloud update successful!, ${response}`);
   } catch (error) {
     console.error(`Cloud update failed:`, error.message);
   }
