@@ -12,7 +12,6 @@ dotenv.config({ path: "./config.env" });
 
 const PORT = 3000;
 const OBSIDIAN_VAULT = process.env.OBISIDIAN_VAULT;
-console.log(OBSIDIAN_VAULT);
 const CLOUD_API_URL = process.env.CLOUD_API_URL;
 
 const app = express();
@@ -83,12 +82,8 @@ ${data.solution}
 `;
 
   // 3. Write File
-  // Sanitize filename
-  // const safeTitle = data.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
   const fileName = `${data.leetcodeId}. ${data.title}.md`;
-  console.log(fileName);
   const filePath = path.join(OBSIDIAN_VAULT, fileName);
-  console.log(filePath);
   fs.writeFileSync(filePath, fileContent);
   console.log(`[Local] Saved to: ${fileName}`);
   return filePath;
@@ -141,17 +136,51 @@ async function pushToCloud(payload) {
 }
 
 function parseMarkdownToPayload(frontmatter, content) {
+  const extractSection = (headerName) => {
+    const regex = new RegExp(
+      `#### ${headerName}[\\r\\n]+([\\s\\S]*?)(?=####|$)`,
+      "i",
+    );
+    const match = content.match(regex);
+    return match ? match[1].trim() : "";
+  };
+
+  let rawDescription = extractSection("Problem Description");
+  // Regex to remove the wrapping code block backticks if present
+  const cleanDescription = rawDescription
+    .replace(/^```[\w+\s]*\n([\s\S]*?)```$/i, "$1")
+    .trim();
+
+  const solutionText = extractSection("Solution");
+
+  // The code section contains a code block (```cpp ... ```). We need just the inner code.
+  const codeSectionText = extractSection("Code");
+  const codeBlockRegex = /```[\w+\s]*\n([\s\S]*?)```/;
+  const codeMatch = codeSectionText.match(codeBlockRegex);
+  const cleanCode = codeMatch ? codeMatch[1].trim() : "";
+
   return {
+    // Map Frontmatter properties
     title: frontmatter.title,
-    leetcode_id: Number(frontmatter.leetcodeId),
+    leetcode_id: Number(frontmatter.leetcode_id), // Ensure it's a Number
     difficulty: frontmatter.difficulty,
-    rating: 0,
+    rating: frontmatter.rating || 0,
+
+    // Dates
     date_solved: frontmatter.date_solved,
-    review_count: 0,
-    reviewed_on: [],
     next_review: frontmatter.next_review,
-    url: date_solved.url,
-    tags: date_solved.tags,
+    reviewed_on: frontmatter.reviewed_on || [],
+    review_count: frontmatter.review_count || 0,
+
+    // Metadata
+    url: frontmatter.url,
+    tags: frontmatter.tags || [],
+
+    // The Extracted Content
+    description: cleanDescription,
+    solution: solutionText,
+    code: cleanCode,
+    language: "cpp",
   };
 }
 
