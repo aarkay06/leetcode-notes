@@ -18,7 +18,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-app.post("/save-problem", async (req, res) => {
+app.post("/api/problems", async (req, res) => {
   const data = req.body;
 
   try {
