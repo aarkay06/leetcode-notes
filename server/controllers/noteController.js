@@ -28,6 +28,7 @@ exports.createNote = catchAsync(async (req, res) => {
 });
 
 exports.updateNotes = catchAsync(async (req, res, next) => {
+  console.log(req.body);
   if (req.body.doc_type === "tag") {
     filter = { title: req.body.title, doc_type: "tag" };
   } else {
