@@ -21,16 +21,26 @@ app.use(bodyParser.json());
 
 app.post("/api/problems", async (req, res) => {
   const data = req.body;
+  const today = new Date();
+  const dateSolved = today.toISOString().split("T")[0];
+  const nextReviewDate = new Date();
+  nextReviewDate.setDate(today.getDate() + 4);
+  const nextReview = nextReviewDate.toISOString().split("T")[0];
+
+  data.rating = 0;
+  data.date_solved = dateSolved;
+  data.review_count = 0;
+  data.reviewed_on = [];
+  data.next_review = nextReview;
 
   try {
     const filePath = saveToLocalFile(data);
+    // We don't await this because we want to reply to Chrome fast
+    pushToCloud(data).catch((err) =>
+      console.error("Cloud push failed:", err.message),
+    );
 
-    // // We don't await this because we want to reply to Chrome fast
-    // pushToCloud(data).catch((err) =>
-    //   console.error("Cloud push failed:", err.message),
-    // );
-
-    // res.json({ success: true, filename: path.basename(filePath) });
+    res.json({ success: true, filename: path.basename(filePath) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
@@ -38,21 +48,15 @@ app.post("/api/problems", async (req, res) => {
 });
 
 function saveToLocalFile(data) {
-  const today = new Date();
-  const dateSolved = today.toISOString().split("T")[0];
-  const nextReviewDate = new Date();
-  nextReviewDate.setDate(today.getDate() + 4);
-  const nextReview = nextReviewDate.toISOString().split("T")[0];
-
   const frontmatter = {
     title: data.title,
     leetcode_id: Number(data.leetcodeId),
     difficulty: data.difficulty,
-    rating: 0,
-    date_solved: dateSolved,
-    review_count: 0,
-    reviewed_on: [],
-    next_review: nextReview,
+    rating: data.rating,
+    date_solved: data.date_solved,
+    review_count: data.review_count,
+    reviewed_on: data.reviewed_on,
+    next_review: data.next_review,
     url: data.url,
     tags: data.tags,
   };
@@ -118,11 +122,8 @@ watcher.on("change", async (filePath) => {
   // We need the ID to update the correct record in Cloud DB
   if (!parsed.data.leetcode_id) return;
 
-  // Parse out the sections (Description, Solution, Code)
-  // (Reuse the extraction logic from your migration script here)
   const payload = parseMarkdownToPayload(parsed.data, parsed.content);
 
-  // Push update to Cloud
   await pushToCloud(payload);
 });
 
@@ -132,23 +133,14 @@ watcher.on("change", async (filePath) => {
 async function pushToCloud(payload) {
   try {
     console.log("handle cloud.");
-    // console.log(`[Cloud] Syncing ${payload.title || payload.name}...`);
-    // // Assuming your API handles both Create (POST) and Update (PUT) logic intelligently
-    // // or uses upsert based on leetcode_id
     await axios.post(CLOUD_API_URL, payload);
-    console.log(`[Cloud] ✅ Sync successful!`);
+    console.log(`Cloud Sync successful!`);
   } catch (error) {
-    console.error(`[Cloud] ❌ Sync failed:`, error.message);
+    console.error(`Cloud Sync failed:`, error.message);
   }
 }
 
-// Helper to parse the full markdown back into JSON for the API
 function parseMarkdownToPayload(frontmatter, content) {
-  // ... Copy the regex logic from your migrate.js script here ...
-  // This ensures that when you edit the text in Obsidian, the specific
-  // fields (Description vs Solution) are updated correctly in the DB.
-
-  // Simple placeholder return for now:
   return {
     title: frontmatter.title,
     leetcode_id: Number(frontmatter.leetcodeId),
