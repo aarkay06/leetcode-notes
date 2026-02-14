@@ -38,23 +38,27 @@ app.post("/api/problems", async (req, res) => {
 });
 
 function saveToLocalFile(data) {
-  // 1. Prepare Frontmatter
+  const today = new Date();
+  const dateSolved = today.toISOString().split("T")[0];
+  const nextReviewDate = new Date();
+  nextReviewDate.setDate(today.getDate() + 3);
+  const nextReview = nextReviewDate.toISOString().split("T")[0];
+
   const frontmatter = {
-    name: data.title,
-    leetcode_id: data.leetcodeId,
+    title: data.title,
+    leetcode_id: Number(data.leetcodeId),
     difficulty: data.difficulty,
     rating: 0,
-    date_solved: new Date().toISOString(),
+    date_solved: dateSolved,
     review_count: 0,
     reviewed_on: [],
+    next_review: nextReview,
     url: data.url,
     tags: data.tags,
   };
 
   // 2. Prepare Content
-  const fileContent = `---
-${matter.stringify("", frontmatter).trim()}
----
+  const fileContent = `${matter.stringify("", frontmatter).trim()}
 
 # ${data.title}
 
