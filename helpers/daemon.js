@@ -117,6 +117,7 @@ const handleTagSync = async (filePath) => {
     leetcode_id: undefined,
   };
 
+  console.log(payload);
   await pushToCloud(payload);
 };
 
