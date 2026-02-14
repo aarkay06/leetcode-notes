@@ -41,7 +41,7 @@ function saveToLocalFile(data) {
   const today = new Date();
   const dateSolved = today.toISOString().split("T")[0];
   const nextReviewDate = new Date();
-  nextReviewDate.setDate(today.getDate() + 3);
+  nextReviewDate.setDate(today.getDate() + 4);
   const nextReview = nextReviewDate.toISOString().split("T")[0];
 
   const frontmatter = {
