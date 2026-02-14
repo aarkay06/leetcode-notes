@@ -22,15 +22,14 @@ app.post("/api/problems", async (req, res) => {
   const data = req.body;
 
   try {
-    console.log(data);
-    // const filePath = saveToLocalFile(data);
+    const filePath = saveToLocalFile(data);
 
-    // // We don't await this because we want to reply to Chrome fast
-    // pushToCloud(data).catch((err) =>
-    //   console.error("Cloud push failed:", err.message),
-    // );
+    // We don't await this because we want to reply to Chrome fast
+    pushToCloud(data).catch((err) =>
+      console.error("Cloud push failed:", err.message),
+    );
 
-    // res.json({ success: true, filename: path.basename(filePath) });
+    res.json({ success: true, filename: path.basename(filePath) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
