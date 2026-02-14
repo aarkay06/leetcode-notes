@@ -6,29 +6,23 @@ const axios = require("axios");
 const matter = require("gray-matter");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const dotenv = require("dotenv");
 
-// --- CONFIGURATION ---
-const PORT = 3001; // Local Daemon Port
-const OBSIDIAN_VAULT = "C:/Users/YourName/Documents/Obsidian Vault/Leetcode"; // CHANGE THIS
-const CLOUD_API_URL = "https://your-vercel-app.vercel.app/api/problems"; // CHANGE THIS
-const EXTENSION_TOKEN = "my-secret-token"; // Optional security
+dotenv.config({ path: "./config.env" });
+
+const PORT = 3001;
+const OBSIDIAN_VAULT = process.env.OBISIDIAN_VAULT;
+const CLOUD_API_URL = process.env.CLOUD_API_URL;
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.json());
 
-// ==========================================
-// 1. RECEIVER: Handle Data from Chrome Extension
-// ==========================================
 app.post("/save-problem", async (req, res) => {
   const data = req.body;
-  console.log(`[Extension] Received: ${data.title}`);
-
   try {
-    // A. Write to Local Obsidian File
     const filePath = saveToLocalFile(data);
 
-    // B. Push to Cloud (Background Task)
     // We don't await this because we want to reply to Chrome fast
     pushToCloud(data).catch((err) =>
       console.error("Cloud push failed:", err.message),
@@ -41,12 +35,11 @@ app.post("/save-problem", async (req, res) => {
   }
 });
 
-// Helper: Formats and writes the Markdown file
 function saveToLocalFile(data) {
   // 1. Prepare Frontmatter
   const frontmatter = {
-    title: data.title,
-    leetcode_id: data.leetcodeId,
+    name: data.title,
+    id: data.leetcodeId,
     difficulty: data.difficulty,
     tags: data.tags,
     url: data.url,
