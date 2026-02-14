@@ -78,7 +78,7 @@ ${data.solution}
   // const safeTitle = data.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
   const fileName = `${data.leetcodeId}. ${data.title}.md`;
   const filePath = path.join(OBSIDIAN_VAULT, fileName);
-
+  console.log(filePath);
   fs.writeFileSync(filePath, fileContent);
   console.log(`[Local] Saved to: ${fileName}`);
   return filePath;
