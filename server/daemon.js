@@ -37,9 +37,7 @@ app.post("/api/problems", async (req, res) => {
   try {
     const filePath = saveToLocalFile(data);
     // We don't await this because we want to reply to Chrome fast
-    pushToCloud(data).catch((err) =>
-      console.error("Cloud push failed:", err.message),
-    );
+    pushToCloud(data).catch((err) => alert("Cloud push failed:", err.message));
 
     res.json({ success: true, filename: path.basename(filePath) });
   } catch (err) {
