@@ -27,6 +27,7 @@ app.post("/api/problems", async (req, res) => {
   nextReviewDate.setDate(today.getDate() + 4);
   const nextReview = nextReviewDate.toISOString().split("T")[0];
 
+  data.leetcode_id = data.leetcodeId ? data.leetcodeId : data.leetcode_id;
   data.rating = 0;
   data.date_solved = dateSolved;
   data.review_count = 0;
