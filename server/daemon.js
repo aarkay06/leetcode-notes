@@ -76,7 +76,6 @@ ${data.solution}
 \`\`\`
 
 #### Related Problems
-
 `;
 
   // 3. Write File
@@ -136,7 +135,7 @@ async function pushToCloud(payload) {
     // console.log(`[Cloud] Syncing ${payload.title || payload.name}...`);
     // // Assuming your API handles both Create (POST) and Update (PUT) logic intelligently
     // // or uses upsert based on leetcode_id
-    // await axios.post(CLOUD_API_URL, payload);
+    await axios.post(CLOUD_API_URL, payload);
     console.log(`[Cloud] ✅ Sync successful!`);
   } catch (error) {
     console.error(`[Cloud] ❌ Sync failed:`, error.message);
