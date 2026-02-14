@@ -19,7 +19,6 @@ exports.getAllNotes = catchAsync(async (req, res) => {
 });
 
 exports.createNote = catchAsync(async (req, res) => {
-  console.log(req.body);
   const newNote = await Note.create(req.body);
 
   res.status(200).json({
@@ -29,8 +28,6 @@ exports.createNote = catchAsync(async (req, res) => {
 });
 
 exports.updateNotes = catchAsync(async (req, res, next) => {
-  console.log("called for an update!");
-  console.log(req.body);
   const note = await Note.findOneAndUpdate(
     { leetcode_id: req.body.leetcode_id },
     req.body,
@@ -41,7 +38,7 @@ exports.updateNotes = catchAsync(async (req, res, next) => {
   );
 
   if (!note) {
-    return next(new AppError("No note found with that id", 404));
+    this.createNote(req, res);
   }
 
   res.status(200).json({
