@@ -10,7 +10,7 @@ const dotenv = require("dotenv");
 
 dotenv.config({ path: "./config.env" });
 
-const PORT = 3001;
+const PORT = 3000;
 const OBSIDIAN_VAULT = process.env.OBISIDIAN_VAULT;
 const CLOUD_API_URL = process.env.CLOUD_API_URL;
 
@@ -20,15 +20,17 @@ app.use(bodyParser.json());
 
 app.post("/save-problem", async (req, res) => {
   const data = req.body;
+
   try {
-    const filePath = saveToLocalFile(data);
+    console.log(data);
+    // const filePath = saveToLocalFile(data);
 
-    // We don't await this because we want to reply to Chrome fast
-    pushToCloud(data).catch((err) =>
-      console.error("Cloud push failed:", err.message),
-    );
+    // // We don't await this because we want to reply to Chrome fast
+    // pushToCloud(data).catch((err) =>
+    //   console.error("Cloud push failed:", err.message),
+    // );
 
-    res.json({ success: true, filename: path.basename(filePath) });
+    // res.json({ success: true, filename: path.basename(filePath) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
