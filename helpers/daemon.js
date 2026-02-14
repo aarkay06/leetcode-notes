@@ -12,6 +12,8 @@ dotenv.config({ path: "./config.env" });
 
 const PORT = 3000;
 const OBSIDIAN_VAULT = process.env.OBISIDIAN_VAULT;
+const LEETCODE_DIR = path.join(OBSIDIAN_VAULT, "Leetcode Problems");
+const ALGORITHMS_DIR = path.join(OBSIDIAN_VAULT, "Algorithms");
 const CLOUD_API_URL = "http://localhost:8000/api/v1/notes";
 
 const app = express();
@@ -36,6 +38,8 @@ app.post("/api/problems", async (req, res) => {
   try {
     console.log(data);
     const filePath = saveToLocalFile(data);
+    ensureTagFilesExist(data.tags);
+
     // We don't await this because we want to reply to Chrome fast
     pushToCloud(data).catch((err) => alert("Cloud push failed:", err.message));
 
@@ -46,8 +50,25 @@ app.post("/api/problems", async (req, res) => {
   }
 });
 
+// Helper: Ensure Tag files exist in Algorithms folder
+function ensureTagFilesExist(tags) {
+  if (!tags || !Array.isArray(tags)) return;
+
+  tags.forEach((tag) => {
+    // Sanitize tag (e.g. "Bit Manipulation" -> "Bit-Manipulation")
+    const safeTagName = tag.trim().replace(/\s+/g, "-");
+    const tagFilePath = path.join(ALGORITHMS_DIR, `${safeTagName}.md`);
+
+    if (!fs.existsSync(tagFilePath)) {
+      const content = `# ${safeTagName}\n\nType your summary and patterns for ${tag} here.\n`;
+      fs.writeFileSync(tagFilePath, content);
+    }
+  });
+}
+
 function saveToLocalFile(data) {
   const frontmatter = {
+    doc_type: "problem",
     title: data.title,
     leetcode_id: Number(data.leetcodeId),
     difficulty: data.difficulty,
@@ -83,29 +104,49 @@ ${data.solution}
 
   // 3. Write File
   const fileName = `${data.leetcodeId}. ${data.title}.md`;
-  const filePath = path.join(OBSIDIAN_VAULT, fileName);
+  const filePath = path.join(LEETCODE_DIR, fileName);
   fs.writeFileSync(filePath, fileContent);
-  console.log(`[Local] Saved to: ${fileName}`);
   return filePath;
 }
 
-// ==========================================
-// 2. WATCHER: Sync Edits from Obsidian -> Cloud
-// ==========================================
-
-// console.log(`[Watcher] Watching for changes in: ${OBSIDIAN_VAULT}`);
-
-const watcher = chokidar.watch(OBSIDIAN_VAULT, {
+const problem_folder_watcher = chokidar.watch(LEETCODE_DIR, {
   ignored: /(^|[\/\\])\../, // ignore dotfiles
   persistent: true,
   ignoreInitial: true, // Don't sync everything on startup, only new changes
   awaitWriteFinish: {
-    stabilityThreshold: 2000, // Wait 2s after you stop typing to sync
+    stabilityThreshold: 30000, // Wait 2s after you stop typing to sync
     pollInterval: 100,
   },
 });
 
-watcher.on("change", async (filePath) => {
+const tags_folder_watcher = chokidar.watch(ALGORITHMS_DIR, {
+  ignored: /(^|[\/\\])\../,
+  persistent: true,
+  ignoreInitial: true,
+  awaitWriteFinish: {
+    stabilityThreshold: 30000, // Wait 2s after you stop typing to sync
+    pollInterval: 100,
+  },
+});
+
+tags_folder_watcher.on("change", async (filePath) => {
+  if (path.extname(filePath) !== ".md") return;
+
+  const fileName = path.basename(filePath, ".md"); // "Binary-Search"
+  const content = fs.readFileSync(filePath, "utf8");
+
+  const payload = {
+    doc_type: "tag",
+    title: fileName,
+    description: content,
+    tags: [],
+    leetcode_id: undefined, // Explicitly undefined so server validation passes
+  };
+
+  await pushToCloud(payload);
+});
+
+problem_folder_watcher.on("change", async (filePath) => {
   if (path.extname(filePath) !== ".md") return;
 
   console.log(`[Watcher] File changed: ${path.basename(filePath)}`);

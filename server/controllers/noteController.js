@@ -28,15 +28,17 @@ exports.createNote = catchAsync(async (req, res) => {
 });
 
 exports.updateNotes = catchAsync(async (req, res, next) => {
-  const note = await Note.findOneAndUpdate(
-    { leetcode_id: req.body.leetcode_id },
-    req.body,
-    {
-      new: true,
-      runValidators: true,
-      upsert: true,
-    },
-  );
+  if (req.body.doc_type === "tag") {
+    filter = { title: req.body.title, doc_type: "tag" };
+  } else {
+    filter = { leetcode_id: req.body.leetcode_id };
+  }
+
+  const note = await Note.findOneAndUpdate(filter, req.body, {
+    new: true,
+    runValidators: true,
+    upsert: true,
+  });
 
   res.status(200).json({
     status: "success",
