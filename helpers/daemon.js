@@ -17,12 +17,6 @@ const ALGORITHMS_DIR = path.join(OBSIDIAN_VAULT, "Algorithms");
 const CLOUD_API_URL =
   process.env.CLOUD_API_URL || "http://localhost:8000/api/v1/notes";
 
-// Ensure directories exist
-if (!fs.existsSync(LEETCODE_DIR))
-  fs.mkdirSync(LEETCODE_DIR, { recursive: true });
-if (!fs.existsSync(ALGORITHMS_DIR))
-  fs.mkdirSync(ALGORITHMS_DIR, { recursive: true });
-
 const app = express();
 app.use(cors());
 app.use(bodyParser.json({ limit: "10mb" }));
@@ -64,7 +58,6 @@ app.post("/api/problems", async (req, res) => {
       leetcode_id: data.leetcode_id,
     };
 
-    // Fire and forget upload
     pushToCloud(cloudPayload).catch((err) =>
       console.error("Cloud push failed:", err.message),
     );
@@ -88,7 +81,6 @@ const problem_folder_watcher = chokidar.watch(LEETCODE_DIR, {
 
 problem_folder_watcher.on("change", async (filePath) => {
   if (path.extname(filePath) !== ".md") return;
-  console.log(`[Problem Watcher] Changed: ${path.basename(filePath)}`);
 
   const content = fs.readFileSync(filePath, "utf8");
   const parsed = matter(content);
@@ -115,7 +107,6 @@ const handleTagSync = async (filePath) => {
   if (path.extname(filePath) !== ".md") return;
 
   const fileName = path.basename(filePath, ".md");
-  console.log(`[Tag Watcher] Syncing: ${fileName}`);
 
   const content = fs.readFileSync(filePath, "utf8");
 
@@ -123,7 +114,6 @@ const handleTagSync = async (filePath) => {
     doc_type: "tag",
     title: fileName,
     description: content,
-    tags: [],
     leetcode_id: undefined,
   };
 
@@ -140,11 +130,10 @@ tags_folder_watcher.on("change", handleTagSync);
 
 async function pushToCloud(payload) {
   try {
-    // POST works for both Create and Update (Upsert)
     await axios.post(CLOUD_API_URL, payload);
-    console.log(`[Cloud] ✅ Sync successful: ${payload.title}`);
+    console.log(`Cloud Sync successful: ${payload.title}`);
   } catch (error) {
-    console.error(`[Cloud] ❌ Sync failed:`, error.message);
+    console.error(`Cloud Sync failed:`, error.message);
   }
 }
 
@@ -159,7 +148,6 @@ function ensureTagFilesExist(tags) {
       console.log(`[Tags] Creating new topic: ${safeTagName}`);
       const content = `# ${safeTagName}\n\nType your summary and patterns for ${tag} here.\n`;
       fs.writeFileSync(tagFilePath, content);
-      // 'tags_folder_watcher' will catch this 'add' event and sync it!
     }
   });
 }
@@ -199,7 +187,7 @@ ${data.solution}
 #### Related Problems
 `;
 
-  const fileName = `${data.leetcode_id}. ${data.title}.md`; // Fixed property access
+  const fileName = `${data.leetcode_id}. ${data.title}.md`;
   const filePath = path.join(LEETCODE_DIR, fileName);
   fs.writeFileSync(filePath, fileContent);
   console.log(`[Local] Saved to: ${fileName}`);
@@ -229,7 +217,7 @@ function parseMarkdownToPayload(frontmatter, content) {
   const cleanCode = codeMatch ? codeMatch[1].trim() : "";
 
   return {
-    doc_type: "problem", // Explicitly identify this as a problem
+    doc_type: "problem",
     title: frontmatter.title,
     leetcode_id: Number(frontmatter.leetcode_id),
     difficulty: frontmatter.difficulty,
