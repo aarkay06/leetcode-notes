@@ -3,12 +3,6 @@ const catchAsync = require("../utils/catchAsync");
 const APIFeatures = require("../utils/apiFeatures");
 const AppError = require("../utils/appError");
 
-// exports.aliasingMiddleware = (req, res, next) => {
-//   req.query.sort = '-ratingsAverage,price';
-//   req.query.fields = 'name,price,summary,difficulty';
-//   next();
-// };
-
 exports.getAllNotes = catchAsync(async (req, res) => {
   const features = new APIFeatures(Note.find(), req.query)
     .filter()
@@ -49,6 +43,7 @@ exports.updateNotes = catchAsync(async (req, res, next) => {
   if (!note) {
     return next(new AppError("No note found with that id", 404));
   }
+
   res.status(200).json({
     status: "success",
     data: {

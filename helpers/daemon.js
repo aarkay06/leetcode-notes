@@ -122,9 +122,6 @@ watcher.on("change", async (filePath) => {
   await updateToCloud(payload);
 });
 
-// ==========================================
-// 3. CLOUD SYNC: The Uploader
-// ==========================================
 async function pushToCloud(payload) {
   try {
     await axios.post(CLOUD_API_URL, payload);
