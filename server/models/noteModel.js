@@ -1,14 +1,14 @@
 const mongoose = require("mongoose");
 
 const noteSchema = new mongoose.Schema({
-  name: {
+  title: {
     type: String,
     required: [true, "A problem must have a title."],
     unique: true,
     trim: true,
   },
 
-  id: {
+  leetcode_id: {
     type: Number,
     requied: [true, "A problem must have a id."],
     unique: true,

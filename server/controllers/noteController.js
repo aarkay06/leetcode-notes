@@ -34,7 +34,7 @@ exports.createNote = catchAsync(async (req, res) => {
 });
 
 exports.updateNotes = catchAsync(async (req, res, next) => {
-  const note = await Note.findByIdAndUpdate(req.params.id, req.body, {
+  const note = await Note.findByIdAndUpdate(req.params.leetcode_id, req.body, {
     new: true,
     runValidators: true,
   });

@@ -150,9 +150,16 @@ function parseMarkdownToPayload(frontmatter, content) {
 
   // Simple placeholder return for now:
   return {
-    id: frontmatter.leetcode_id,
-    name: frontmatter.title,
-    // ... mapped fields
+    title: frontmatter.title,
+    leetcode_id: Number(frontmatter.leetcodeId),
+    difficulty: frontmatter.difficulty,
+    rating: 0,
+    date_solved: frontmatter.date_solved,
+    review_count: 0,
+    reviewed_on: [],
+    next_review: frontmatter.next_review,
+    url: date_solved.url,
+    tags: date_solved.tags,
   };
 }
 
