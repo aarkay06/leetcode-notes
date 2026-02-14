@@ -38,7 +38,7 @@ exports.updateNotes = catchAsync(async (req, res, next) => {
   console.log("called for an update!");
   console.log(req.body);
   const note = await Note.findOneAndUpdate(
-    { leetcode_id: body.leetcode_id },
+    { leetcode_id: req.body.leetcode_id },
     req.body,
     {
       new: true,
