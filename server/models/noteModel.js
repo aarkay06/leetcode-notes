@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const noteSchema = new mongoose.Schema({
+  doc_type: {
+    type: String,
+    enum: ["problem", "tag"],
+    default: "problem",
+  },
   title: {
     type: String,
     required: [true, "A problem must have a title."],
@@ -10,12 +15,12 @@ const noteSchema = new mongoose.Schema({
 
   leetcode_id: {
     type: Number,
-    requied: [true, "A problem must have a id."],
+    sparse: true,
     unique: true,
+    required: false,
   },
   difficulty: {
     type: String,
-    requied: [true, "A problem must have a difficulty."],
     enum: ["Easy", "Medium", "Hard"],
   },
   tags: {
@@ -45,11 +50,9 @@ const noteSchema = new mongoose.Schema({
   },
   url: {
     type: String,
-    required: [true, "the problem must have a url associated with it."],
   },
   description: {
     type: String,
-    required: [true, "Problem Description missing"],
   },
   code: {
     type: String,
