@@ -39,3 +39,74 @@ graph LR
     B -- Sync/Upsert --> D[(MongoDB Cloud)]
     D -- Fetch --> E[Web Dashboard]
 ```
+
+✨ Features
+Zero-Friction Capture: Solve a problem, click one button, and it's in your Obsidian vault forever.
+
+Two-Way Sync: Edit your notes in Obsidian (add explanations, fix typos, add tags) and the changes automatically reflect on the web dashboard.
+
+Smart Linking: Automatically generates [[WikiLinks]] to related problems. If the note exists, it links to it. If not, it links to the LeetCode problem page.
+
+Tag Notes: Supports "Meta-Notes" (e.g., Dynamic Programming.md). The system distinguishes between Problems and Topics automatically.
+
+Spaced Repetition Ready: auto-generates Frontmatter with date_solved, next_review, and review_count for use with the Obsidian Dataview plugin.
+
+🚀 Setup & Installation
+
+1. The Spirit (Daemon)
+   The heart of the operation. It must be running for sync to work.
+
+Bash
+
+# Clone the repo
+
+git clone [https://github.com/yourusername/grimoire.git](https://github.com/yourusername/grimoire.git)
+cd grimoire/daemon
+
+# Install dependencies
+
+npm install
+
+# Configure Environment
+
+# Create a .env file with:
+
+# OBSIDIAN_VAULT="C:/Users/You/Documents/Obsidian/Grimoire"
+
+# CLOUD_API_URL="[https://your-grimoire-api.vercel.app/api/problems](https://your-grimoire-api.vercel.app/api/problems)"
+
+# Summon the Spirit
+
+npm start 2. The Eye (Extension)
+Go to chrome://extensions/
+
+Enable "Developer Mode".
+
+Click "Load Unpacked" and select the extension/ folder.
+
+3. The Mirror (Web Dashboard)
+   Deploy the server/ folder to Render or Vercel (as a Node API).
+
+Set up a MongoDB Atlas cluster.
+
+Deploy the client/ folder to Vercel.
+
+📂 Vault Structure
+Your Obsidian vault will look like this:
+
+Plaintext
+📂 Grimoire/
+├── 📂 Algorithms/
+│ ├── Array.md # Tag Note
+│ ├── Dynamic_Programming.md
+├── 📂 LeetCode/
+│ ├── 1. Two Sum.md # Problem Note
+│ ├── 217. Contains Duplicate.md
+🔮 Future Roadmap
+[ ] Spaced Repetition Dashboard: A view in the web client showing what problems are due for review today.
+
+[ ] Graph View: A WebGL graph visualization of problem connections (D3.js).
+
+[ ] Streak Tracker: github-style heat map of daily solves.
+
+"Any sufficiently advanced technology is indistinguishable from magic."
