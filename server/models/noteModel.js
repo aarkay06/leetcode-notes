@@ -25,7 +25,6 @@ const noteSchema = new mongoose.Schema({
   },
   tags: {
     type: [String],
-    required: [true, "Not enough tags related to the Problem"],
   },
   rating: {
     type: Number,
