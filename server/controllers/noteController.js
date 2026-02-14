@@ -34,12 +34,9 @@ exports.updateNotes = catchAsync(async (req, res, next) => {
     {
       new: true,
       runValidators: true,
+      upsert: true,
     },
   );
-
-  if (!note) {
-    this.createNote(req, res);
-  }
 
   res.status(200).json({
     status: "success",
