@@ -62,7 +62,7 @@ async function migrate() {
 
       // 4. Construct Payload
       const payload = {
-        name: frontmatter.title, // Maps to 'name' in your schema
+        title: frontmatter.title, // Maps to 'name' in your schema
         id: Number(frontmatter.leetcode_id), // Maps to 'id' (Number)
         difficulty: frontmatter.difficulty,
         tags: Array.isArray(frontmatter.tags)
