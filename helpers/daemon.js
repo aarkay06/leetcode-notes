@@ -12,8 +12,9 @@ dotenv.config({ path: "./config.env" });
 
 const PORT = 3000; // Changed to 3001 to avoid conflict if React is on 3000
 const OBSIDIAN_VAULT = process.env.OBSIDIAN_VAULT;
-const LEETCODE_DIR = path.join(OBSIDIAN_VAULT, "Leetcode Problems");
-const ALGORITHMS_DIR = path.join(OBSIDIAN_VAULT, "Algorithms");
+const LEETCODE_DIR =
+  "C:\\Obsidian\\Coding and Programmes\\DSA\\Leetcode Problems";
+const ALGORITHMS_DIR = "C:\\Obsidian\\Coding and Programmes\\DSA\\Algorithms";
 const CLOUD_API_URL =
   process.env.CLOUD_API_URL || "http://localhost:8000/api/v1/notes";
 
