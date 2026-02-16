@@ -10,7 +10,7 @@ const dotenv = require("dotenv");
 
 dotenv.config({ path: "./config.env" });
 
-const PORT = 3001; // Changed to 3001 to avoid conflict if React is on 3000
+const PORT = 3000; // Changed to 3001 to avoid conflict if React is on 3000
 const OBSIDIAN_VAULT = process.env.OBSIDIAN_VAULT;
 const LEETCODE_DIR = path.join(OBSIDIAN_VAULT, "Leetcode Problems");
 const ALGORITHMS_DIR = path.join(OBSIDIAN_VAULT, "Algorithms");
